@@ -116,3 +116,61 @@ def test_login_through_help_function(page: Page):
 
     # Проверка наличия элемента по XPath (заголовок с ссылкой на страницу пользователя)
     expect(page.locator("xpath=//*[@id='root']/div/main/section/h3/a")).to_be_visible(timeout=5000)
+
+
+# Проверка редиректа всех кнопок первой страницы личного кабинета
+
+import os
+from playwright.sync_api import Page, expect
+from dotenv import load_dotenv
+from help_functions import login  # если login у тебя в отдельном модуле
+
+load_dotenv()
+
+def test_lk_texts_and_buttons(page: Page):
+    login(page)
+
+    # Проверка: редирект на ЛК
+    expect(page).to_have_url("https://my.5verst.ru/#/")
+
+    # Проверка наличия текста-комментариев
+    expected_texts = [
+        "Показать QR-код",
+        "Изменить личные данные",
+        "Посмотреть свою статистику участия в 5 вёрст",
+        "Изменить свой действующий пароль",
+        "Ввести свой «РЖД Бонус» ID",
+        "Участие в клубной программе Спортмастер",
+        "Узнать свой прогресс в клубах 5 вёрст",
+    ]
+    for text in expected_texts:
+        expect(page.locator(f"text={text}")).to_be_visible()
+
+    # Проверка перехода по каждой кнопке (и возврат назад)
+    buttons = {
+        1: "https://my.5verst.ru/#/qrcode",
+        2: "https://my.5verst.ru/#/personal",
+        3: "https://my.5verst.ru/#/statistics",
+        4: "https://my.5verst.ru/#/updatepassword",
+        5: "https://my.5verst.ru/#/rzdbonusid",
+        6: "https://my.5verst.ru/#/sportmasterbonus",
+        7: "https://my.5verst.ru/#/clubs",
+        8: "https://5verst.ru/",
+    }
+
+    for i, expected_url in buttons.items():
+        locator = page.locator(f'xpath=//*[@id="root"]/div/main/section/ul/li[{i}]/a')
+
+        if i == 8:
+            with page.context.expect_page() as new_page_info:
+                locator.click()
+            new_page = new_page_info.value
+            new_page.wait_for_load_state()
+            assert new_page.url == expected_url, f"Ожидался переход на {expected_url}, но был {new_page.url}"
+            new_page.close()
+            continue
+        else:
+            locator.click()
+            page.wait_for_url(expected_url, timeout=5000)  # <-- ВОТ ОН
+            assert page.url == expected_url, f"Ожидался переход на {expected_url}, но был {page.url}"
+            page.go_back()
