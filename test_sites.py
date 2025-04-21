@@ -50,7 +50,6 @@ def test_register_button_color_and_redirect(page: Page):
 
 
 # проверка редиректа на страницу "Вход в личный кабинет"
-
 def test_go_to_login_cabinet(page):
     page.goto("https://5verst.ru/")
 
@@ -174,3 +173,40 @@ def test_lk_texts_and_buttons(page: Page):
             page.wait_for_url(expected_url, timeout=5000)  # <-- ВОТ ОН
             assert page.url == expected_url, f"Ожидался переход на {expected_url}, но был {page.url}"
             page.go_back()
+
+
+
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+#
+# Проверка наличия кнопок и редиректа, что забыли пароль
+#
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+from playwright.sync_api import Page, expect
+from help_functions import open_login_page
+
+def test_forgot_links(page: Page):
+    page.goto("https://my.5verst.ru/#/login")
+
+    # Проверка наличия кнопок
+    forgot_password_link = page.locator('xpath=//*[@id="root"]/div/main/div/main/div/a[1]')
+    forgot_id_link = page.locator('xpath=//*[@id="root"]/div/main/div/main/div/a[2]')
+
+    expect(forgot_password_link).to_be_visible()
+    expect(forgot_id_link).to_be_visible()
+
+    # Проверка редиректа "Забыли пароль?"
+    forgot_password_link.click()
+    expect(page).to_have_url("https://my.5verst.ru/#/remindpassword")
+
+    # Возврат на страницу логина
+    page.go_back()
+
+    # Проверка редиректа "Забыли ID?" (открывается в новом окне)
+    with page.context.expect_page() as new_page_info:
+        forgot_id_link.click()
+
+    new_page = new_page_info.value
+    new_page.wait_for_load_state()
+    assert new_page.url == "https://5verst.ru/reminder/", \
+        f"Ожидался переход на https://5verst.ru/reminder/, но был {new_page.url}"
+    new_page.close()

@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# авторизация
+
 def login(page: Page):
     login = os.getenv("LOGIN")
     password = os.getenv("PASSWORD")
@@ -17,3 +19,9 @@ def login(page: Page):
     page.locator("#password").fill(password)
     page.locator("#root > div > main > div > main > section > button").click()
     page.wait_for_url("https://my.5verst.ru/#/")
+
+ # Открытие страницы авторизации
+
+def open_login_page(page: Page):
+    page.goto("https://my.5verst.ru/#/login")
+    page.wait_for_selector("#login", timeout=10000)
