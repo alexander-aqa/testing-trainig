@@ -105,7 +105,7 @@ def test_login(page: Page):
 
 #     Проверка редиректа в личный кабинет
 from playwright.sync_api import Page, expect
-from help_functions import login  # если login уже вынесен туда
+from pages.login_page import login
 
 def test_login_through_help_function(page: Page):
     login(page)
@@ -122,7 +122,7 @@ def test_login_through_help_function(page: Page):
 import os
 from playwright.sync_api import Page, expect
 from dotenv import load_dotenv
-from help_functions import login  # если login у тебя в отдельном модуле
+from pages.login_page import login  # login у нас в отдельном модуле
 
 load_dotenv()
 
@@ -182,7 +182,7 @@ def test_lk_texts_and_buttons(page: Page):
 #
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 from playwright.sync_api import Page, expect
-from help_functions import open_login_page
+from pages.login_page import login
 
 def test_forgot_links(page: Page):
     page.goto("https://my.5verst.ru/#/login")
