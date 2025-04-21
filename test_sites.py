@@ -103,3 +103,16 @@ def test_login(page: Page):
     # 6. Ожидаем появления ссылки на страницу личного кабинета
     page.wait_for_selector("#root > div > main > section > h3 > a", timeout=10000)
 
+
+#     Проверка редиректа в личный кабинет
+from playwright.sync_api import Page, expect
+from help_functions import login  # если login уже вынесен туда
+
+def test_login_through_help_function(page: Page):
+    login(page)
+
+    # Проверка: редирект произошёл на нужный URL
+    assert page.url == "https://my.5verst.ru/#/", f"Ожидался переход на https://my.5verst.ru/#/, но сейчас {page.url}"
+
+    # Проверка наличия элемента по XPath (заголовок с ссылкой на страницу пользователя)
+    expect(page.locator("xpath=//*[@id='root']/div/main/section/h3/a")).to_be_visible(timeout=5000)
